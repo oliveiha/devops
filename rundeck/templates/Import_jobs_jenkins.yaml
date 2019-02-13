@@ -1,0 +1,33 @@
+- defaultTab: summary
+  description: Realiza a importação de um lista de job para o jenkins.
+  executionEnabled: true
+  id: 22b343a0-c150-4f0c-8760-0b382def70e9
+  loglevel: INFO
+  name: Import jobs jenkins
+  nodeFilterEditable: false
+  options:
+  - label: Url jenkins
+    name: url_jenkins
+    required: true
+  - label: Usuário Jenkins
+    name: user_jenkins
+    required: true
+  - label: Password
+    name: password
+    required: true
+    secure: true
+    valueExposed: true
+  - label: Template modelo
+    name: template_padrao
+    required: true
+  - label: Arquivo jobs
+    name: arquivo
+    required: true
+    type: file
+  scheduleEnabled: true
+  sequence:
+    commands:
+    - script: docker container run -t --mount type=bind,src=@file.arquivo@,dst=/usr/src/app/file.txt -e "URL_JENKINS=@option.url_jenkins@" -e "USUARIO_JENKINS=@option.user_jenkins@" -e "PASS_JENKINS=@option.password@" -e "JOB_PADRAO=@option.template_padrao@" cedrotechnologies/jenkins_import_job
+    keepgoing: false
+    strategy: node-first
+  uuid: 22b343a0-c150-4f0c-8760-0b382def70e9

@@ -1,0 +1,36 @@
+- defaultTab: summary
+  description: ''
+  executionEnabled: true
+  id: 4a132343-075e-4f73-a010-24533fcd0977
+  loglevel: DEBUG
+  name: Export repositorios jenkins
+  nodeFilterEditable: false
+  options:
+  - description: Digite a url do jenkins ao qual os dados seram exportados.
+    label: Url Jenkins
+    name: url_jenkins
+    required: true
+  - description: Digite o usuário para acessar o jenkins.
+    label: Usuário Jenkins
+    name: user_jenkins
+    required: true
+  - description: Digite a senha para acessar o jenkins.
+    label: Senha
+    name: password
+    required: true
+    secure: true
+    valueExposed: true
+  - description: Digite qual o projeto que deve ser utilizado.
+    label: Projeto
+    name: projeto
+    required: true
+    values:
+    - Guide
+    - RBC
+  scheduleEnabled: true
+  sequence:
+    commands:
+    - script: docker container run -t -e "URL_JENKINS=@option.url_jenkins@" -e "USUARIO_JENKINS=@option.user_jenkins@" -e "PASS_JENKINS=@option.password@" -e EXPORT_REPOSITORIOS=True -e "PROJETO=@option.projeto@" cedrotechnologies/jenkins_api
+    keepgoing: false
+    strategy: node-first
+  uuid: 4a132343-075e-4f73-a010-24533fcd0977

@@ -1,0 +1,26 @@
+- defaultTab: summary
+  description: Realiza o a execução de todos jobs no jenkins, via api.
+  executionEnabled: true
+  id: a47fa446-3757-434d-a36b-918348870beb
+  loglevel: INFO
+  name: Start all jobs jenkins
+  nodeFilterEditable: false
+  options:
+  - label: Url Jenkins
+    name: url_jenkins
+    required: true
+  - label: Usuário Jenkins
+    name: user_jenkins
+    required: true
+  - label: Senha
+    name: pass_jenkins
+    required: true
+    secure: true
+    valueExposed: true
+  scheduleEnabled: true
+  sequence:
+    commands:
+    - script: docker container run -t -e "URL_JENKINS=@option.url_jenkins@" -e "USUARIO_JENKINS=@option.user_jenkins@" -e "PASS_JENKINS=@option.pass_jenkins@" cedrotechnologies/jenkins_startall_jobs:v0.1
+    keepgoing: false
+    strategy: node-first
+  uuid: a47fa446-3757-434d-a36b-918348870beb
