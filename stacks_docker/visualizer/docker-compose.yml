@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  visualizer:
+    image: dockersamples/visualizer
+    restart: always
+    ports:
+      - "3000:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        failure_action: rollback
+        parallelism: 1
+        delay: 10s
+      resources:
+        limits:
+          cpus: '1'
+          memory: 256m
+      placement:
+        constraints: [node.role == manager]

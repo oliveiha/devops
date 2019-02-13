@@ -1,0 +1,25 @@
+# https://portainer.io/install.html
+
+version: '3.6'
+services:
+  portainer:
+    image: portainer/portainer
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/var/cedro/portainer_data:/data"
+    ports:
+      - "9000:9000"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        failure_action: rollback
+        parallelism: 1
+        delay: 10s
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 50m
