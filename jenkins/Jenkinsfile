@@ -1,0 +1,15 @@
+pipeline {
+  agent any
+  stages {
+    stage('Build') {
+      steps {
+        sh 'docker build -t cedrotechnologies/jenkins:${TAG_QA} . && docker build -t cedrotechnologies/jenkins:latest .'
+      }
+    }
+    stage('Deploy') {
+      steps {
+        sh 'docker stack deploy -c docker-compose.yml --resolve-image=never jenkins_pipe'
+      }
+    }
+  }
+}

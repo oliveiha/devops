@@ -1,0 +1,14 @@
+blueocean
+role-strategy
+cloudbees-folder
+antisamy-markup-formatter
+build-timeout
+credentials-binding
+timestamper
+pipeline-stage-view
+git
+ssh-slaves
+pipeline-model-definition
+pipeline-github-lib
+publish-over-ssh
+github

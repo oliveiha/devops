@@ -1,0 +1,30 @@
+version: '3.6'
+
+services:
+    jenkins:
+      image: cedrotechnologies/jenkins
+      ports:
+        - "18090:8080"
+        - "50001:50000"
+      volumes:
+#        - "/var/cedro/jenkins_lab:/var/jenkins_home"
+        - "/var/run/docker.sock:/var/run/docker.sock"
+        - "/usr/bin/docker:/usr/bin/docker"
+      deploy:
+        replicas: 1
+        resources:
+          limits:
+            cpus: '1'
+            memory: 1G
+        restart_policy:
+          condition: on-failure
+          delay: 5s
+          max_attempts: 3
+          window: 120s
+        update_config:
+          failure_action: rollback
+          parallelism: 1
+          delay: 10s
+        placement:
+          constraints:
+            - node.role == manager
