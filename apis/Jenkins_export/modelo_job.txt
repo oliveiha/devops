@@ -1,0 +1,50 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Nome Projeto: &#xd;
+&#xd;
+ResponsÃ¡vel: </description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@3.9.1">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>git@bitbucket.org:guideinvestimentos/NOME_PROJETO.git</url>
+        <credentialsId>9b1b4349-a9cc-4e45-a2f4-6a7cc8fb6d88</credentialsId>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>*/devel</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions/>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command># Tratamentos
+
+cp .env.qa .env
+
+sed -i &apos;s,^WSO2_URL=.*,WSO2_URL=&apos;${URL_WSO2}&apos;,&apos; .env
+
+sed -i &apos;s,^TOKEN_URL=.*,TOKEN_URL=&apos;${URL_TOKEN}&apos;,&apos; .env
+
+sed -i &apos;s,^REDIS_HOST=.*,REDIS_HOST=&apos;${REDIS_HOST}&apos;,&apos; .env</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>docker stack deploy -c docker-compose.yml ${JOB_NAME}</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>
