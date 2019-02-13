@@ -1,0 +1,25 @@
+groups:
+- name: Service Metrics
+  rules:
+
+  # Alert for any service hight usage CPU
+  - alert: container_cpu_usage
+    expr: sum(rate(container_cpu_usage_seconds_total{name=~".*",name!=""}[5m])) by (name) * 100 > 90
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      identifier: "`{{ $labels.instance }}` - `{{ $labels.container_label_com_docker_swarm_task_name }}`"
+      summary: "CPU alert for Swarm service {{ $labels.container_label_com_docker_swarm_task_name }} on {{ $labels.instance }}"
+      description: "CPU usage is hight, please go to check it CPU usage is at {{ humanize $value}}%."
+
+  # Alert for any instance that is unreachable for >5 minutes.
+  - alert: InstanceDown
+    expr: up == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      identifier: "`{{ $labels.instance }}` - `{{ $labels.container_label_com_docker_swarm_task_name }}`"
+      summary: "Instance {{ $labels.instance }} down"
+      description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minutes."

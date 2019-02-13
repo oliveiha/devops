@@ -1,0 +1,58 @@
+version: '3.3'
+
+services:
+
+  cadvisor:
+    image: google/cadvisor:v0.28.5
+    hostname: '{{.Node.Hostname}}'
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        failure_action: rollback
+        parallelism: 1
+        delay: 10s
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - "18085:8080"
+
+  node-exporter:
+    image: prom/node-exporter:v0.16.0
+    hostname: '{{.Node.Hostname}}'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /etc/hostname:/etc/nodename:ro
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        failure_action: rollback
+        parallelism: 1
+        delay: 10s
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "19105:9100"

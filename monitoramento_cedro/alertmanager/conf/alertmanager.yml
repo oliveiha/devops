@@ -1,0 +1,57 @@
+global:
+  resolve_timeout: 5m
+  slack_api_url: https://hooks.slack.com/services/123123123
+
+templates:
+  - '/etc/alertmanager/*.tmpl'
+
+route:
+   group_wait: 30s
+   group_interval: 5m
+   repeat_interval: 1h
+   group_by: ['cluster', 'alertname', 'service']
+   receiver: email_default
+
+   routes:
+    - receiver: slack_manager
+      continue: true
+      match_re:
+        job: ".*ambiente-qa$"
+
+    - receiver: slack_worker
+      match_re:
+        job: ".*ambiente-dev$"
+
+receivers:
+  - name: 'slack_geral'
+    slack_configs:
+      - send_resolved: true
+        username: 'Monitoramento Geral'
+        channel: '#channel1'
+        title: '{{ template "custom_title" . }}'
+        text: '{{ template "custom_text" . }}'
+
+  - name: 'slack_manager'
+    slack_configs:
+      - send_resolved: true
+        username: 'Monitoramento Manager'
+        channel: '#channel2'
+        title: '{{ template "custom_title" . }}'
+        text: '{{ template "custom_text" . }}'
+
+  - name: 'slack_worker'
+    slack_configs:
+      - send_resolved: true
+        username: 'Monitoramento Worker'
+        channel: '#channel3'
+        title: '{{ template "custom_title" . }}'
+        text: '{{ template "custom_text" . }}'
+
+  - name: 'email_default'
+    email_configs:
+      - from: 'meuemail@exemplo.com'
+        to: 'email@exemplo.com'
+        smarthost: 'smtp.servidordeemail:587'
+        auth_username: meuemail@exemplo.com
+        auth_identity: meuemail@exemplo.com
+        auth_password: 'senhaemail'

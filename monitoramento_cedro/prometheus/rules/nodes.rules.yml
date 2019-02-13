@@ -1,0 +1,39 @@
+groups:
+- name: "Node Metrics"
+
+  rules:
+
+  - alert: node_memory_hight_usage
+    expr: (((node_memory_MemTotal_bytes - node_memory_MemFree_bytes) / node_memory_MemTotal_bytes) * 100) > 90
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      description: "Docker host memory usage is {{ humanize $value}}%. Reported by instance {{ $labels.instance }} of job {{ $labels.instance }}."
+      summary: "Memory is almost full, please go check it, no {{ $labels.instance }}  - {{ $labels.instance }}"
+
+  - alert: node_storage
+    expr: (node_filesystem_size_bytes{fstype="ext4"} - node_filesystem_free_bytes{fstype="ext4"}) / node_filesystem_size_bytes{fstype="ext4"}  * 100 > 90
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Server storage is almost full"
+      description: "Host storage usage is {{ humanize $value}}%. Reported by instance {{ $labels.instance }} of job {{ $labels.job }}."
+
+  - alert: node_memory_free_10%
+    expr: node_exporter:node_memory_free:memory_used_percents >= 90
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Instance {{ $labels.instance }} hight memory usage"
+      description: "{{ $labels.instance }} has more than 90% of its memory used."
+
+  - alert: node_disck_space_10%
+    expr: node_exporter:node_filesystem_free:fs_used_percents >= 90
+    labels:
+      severity: critical
+    annotations:
+      summary: "Instance {{ $labels.instance }} is low on disk space"
+      description: "{{ $labels.instance }} has only {{ $value }}% free."

@@ -1,0 +1,35 @@
+modules:
+  http_get_200:
+    prober: http
+    timeout: 10s
+    http:
+      valid_status_codes: [200]
+      method: GET
+      fail_if_ssl: false
+      tls_config:
+        insecure_skip_verify: false
+
+  http_post_2xx:
+    prober: http
+    http:
+      method: POST
+
+  tcp_connect:
+    prober: tcp
+
+  pop3s_banner:
+    prober: tcp
+    tcp:
+      query_response:
+      - expect: "^+OK"
+      tls: true
+      tls_config:
+        insecure_skip_verify: false
+
+  ssh_banner:
+    prober: tcp
+    tcp:
+      query_response:
+      - expect: "^SSH-2.0-"
+  icmp:
+    prober: icmp

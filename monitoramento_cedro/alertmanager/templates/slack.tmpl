@@ -1,0 +1,11 @@
+{{ define "custom_title" }}[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] Monitoring Event Notification {{end}}
+
+{{ define "custom_text"}}
+{{ range .Alerts }}
+   *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`
+  *Description:* {{ .Annotations.description }}
+  *Details:*
+  {{ range .Labels.SortedPairs }}  *{{ .Name }}:* `{{ .Value }}`
+  {{ end }}
+{{ end }}
+{{ end }}

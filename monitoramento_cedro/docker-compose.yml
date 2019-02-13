@@ -1,0 +1,239 @@
+version: '3.6'
+
+networks:
+  monitoramento:
+    driver: overlay
+    attachable: true
+
+volumes:
+  prometheus_dados: {}
+  grafana_data: {}
+  grafana_lib: {}
+  alertmanager: {}
+
+services:
+  prometheus:
+    image: cedrotechnologies/prometheus:development
+    volumes:
+      - ./prometheus/rules/:/etc/prometheus/rules
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_dados:/prometheus
+      - ./prometheus/urls/:/etc/prometheus/urls
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 350M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        failure_action: rollback
+        parallelism: 1
+        delay: 10s
+        order: "start-first"
+    ports:
+      - "19090:9090"
+    networks:
+      - monitoramento
+
+  alertmanager:
+    image: cedrotechnologies/alertmanager:development
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        failure_action: rollback
+        parallelism: 1
+        delay: 10s
+    ports:
+      - "19093:9093"
+    networks:
+      - monitoramento
+    depends_on:
+      - prometheus
+    volumes:
+      - alertmanager:/alertmanager
+      - ./alertmanager/conf/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+
+  cadvisor:
+    image: google/cadvisor:v0.28.5
+    hostname: '{{.Node.Hostname}}'
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        failure_action: rollback
+        parallelism: 1
+        delay: 10s
+    networks:
+      - monitoramento
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - "18080:8080"
+    depends_on:
+      - prometheus
+
+  node-exporter:
+    image: prom/node-exporter:v0.16.0
+    hostname: '{{.Node.Hostname}}'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /etc/hostname:/etc/nodename:ro
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        failure_action: rollback
+        parallelism: 1
+        delay: 10s
+    ports:
+      - "19100:9100"
+    networks:
+      - monitoramento
+    depends_on:
+      - prometheus
+
+  grafana:
+    image: cedrotechnologies/grafana:v0.2
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-cedro@2017}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        failure_action: rollback
+        parallelism: 1
+        delay: 10s
+    ports:
+      - "13000:3000"
+    networks:
+      - monitoramento
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_lib:/var/lib/grafana
+      - grafana_data:/etc/grafana
+
+  unsee:
+    image: cloudflare/unsee:v0.9.2
+    hostname: '{{.Node.Hostname}}'
+    environment:
+      - ALERTMANAGER_URI=http://alertmanager:9093
+    networks:
+      - monitoramento
+    depends_on:
+      - prometheus
+      - alertmanager
+    ports:
+      - "18081:8080"
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 64M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        failure_action: rollback
+        parallelism: 1
+        delay: 10s
+
+  backbox-exporter:
+    image: prom/blackbox-exporter:v0.12.0
+    hostname: '{{.Node.Hostname}}'
+    volumes:
+      - ./blackbox/config.yml:/etc/blackbox_exporter/config.yml
+    networks:
+      - monitoramento
+    depends_on:
+      - prometheus
+      - alertmanager
+    ports:
+      - "19115:9115"
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 64M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        failure_action: rollback
+        parallelism: 1
+        delay: 10s

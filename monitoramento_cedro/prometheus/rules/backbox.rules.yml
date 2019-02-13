@@ -1,0 +1,10 @@
+groups:
+- name: "Endpoints"
+  rules:
+    - alert: EndpointError
+      expr: probe_success == 0
+      for: 30s
+      labels:
+        severity: "critical"
+      annotations:
+        summary: "The endpoint {{ $labels.instance }} is not right please go check it."
